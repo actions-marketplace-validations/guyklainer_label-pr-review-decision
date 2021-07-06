@@ -1,5 +1,5 @@
 import { getInput, debug, setFailed, setOutput } from "@actions/core";
-import { getOctokit } from "@actions/github";
+import {context, getOctokit} from "@actions/github";
 
 const token =
   getInput("token") || process.env.GH_PAT || process.env.GITHUB_TOKEN;
@@ -8,14 +8,14 @@ export const run = async () => {
   debug("starting");
   if (!token) throw new Error("GitHub token not found");
   const octokit = getOctokit(token);
-  
+
   if (!context.payload.pull_request)
     return console.log("No pull request found");
 
-  debug(`pr obj: ${JSON.stringify(pull_request)}`);
-  
-//   const pullRequest = (context as any).payload
-//     .pull_request as EventPayloads.WebhookPayloadPullRequestPullRequest;
+  const pullRequest = (context as any).payload
+    .pull_request;
+
+  debug(`pr obj: ${JSON.stringify(pullRequest)}`);
 
 //   const reviews = await octokit.pulls.listReviews({
 //     owner: context.repo.owner,
