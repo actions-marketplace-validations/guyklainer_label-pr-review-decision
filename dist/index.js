@@ -1438,7 +1438,17 @@ const run = async () => {
         return console.log("No pull request found");
     const pullRequest = github_1.context.payload
         .pull_request;
-    core_1.debug(`pr obj: ${JSON.stringify(pullRequest)}`);
+    core_1.debug(`pr state is: ${JSON.stringify(pullRequest.mergeable_state)}`);
+    if (pullRequest.mergeable_state === "clean") {
+        await octokit.issues.addLabels({
+            owner: github_1.context.repo.owner,
+            repo: github_1.context.repo.repo,
+            issue_number: pullRequest.number,
+            labels: (core_1.getInput("labels") || "")
+                .split(",")
+                .map((label) => label.trim()),
+        });
+    }
     //   const reviews = await octokit.pulls.listReviews({
     //     owner: context.repo.owner,
     //     repo: context.repo.repo,
