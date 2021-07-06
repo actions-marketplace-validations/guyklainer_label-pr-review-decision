@@ -15,7 +15,18 @@ export const run = async () => {
   const pullRequest = (context as any).payload
     .pull_request;
 
-  debug(`pr obj: ${JSON.stringify(pullRequest)}`);
+  debug(`pr state is: ${JSON.stringify(pullRequest.mergeable_state)}`);
+  if(pullRequest.mergeable_state === "clean") {
+    await octokit.issues.addLabels({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      issue_number: pullRequest.number,
+      labels: (getInput("labels") || "")
+        .split(",")
+        .map((label) => label.trim()),
+    });
+
+  }
 
 //   const reviews = await octokit.pulls.listReviews({
 //     owner: context.repo.owner,
