@@ -11,7 +11,7 @@ export const run = async () => {
   if (!context.payload.pull_request)
     return console.log("No pull request found");
 
-  console.log(JSON.stringify(pull_request))
+  debug(JSON.stringify(pull_request))
   
 //   const pullRequest = (context as any).payload
 //     .pull_request as EventPayloads.WebhookPayloadPullRequestPullRequest;
