@@ -5,13 +5,14 @@ const token =
   getInput("token") || process.env.GH_PAT || process.env.GITHUB_TOKEN;
 
 export const run = async () => {
+  debug("starting");
   if (!token) throw new Error("GitHub token not found");
   const octokit = getOctokit(token);
   
   if (!context.payload.pull_request)
     return console.log("No pull request found");
 
-  debug(JSON.stringify(pull_request))
+  debug(`pr obj: ${JSON.stringify(pull_request)}`);
   
 //   const pullRequest = (context as any).payload
 //     .pull_request as EventPayloads.WebhookPayloadPullRequestPullRequest;
