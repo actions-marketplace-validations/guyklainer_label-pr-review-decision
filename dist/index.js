@@ -1439,8 +1439,7 @@ const run = async () => {
     const pullRequest = github_1.context.payload
         .pull_request;
     if (pullRequest) {
-        core_1.debug(`pr state is: ${pullRequest.mergeable_state}`);
-        const res = await octokit.graphql(`
+        const { repository } = await octokit.graphql(`
      {
       repository(name: "${github_1.context.repo.repo}", owner: "${github_1.context.repo.owner}") { 
        pullRequest(number: ${pullRequest.number}) {
@@ -1449,23 +1448,18 @@ const run = async () => {
       }
      }
     `);
-        core_1.debug(JSON.stringify(res));
-        // if(pullRequest.mergeable_state === "clean") {
-        //   const pull = await octokit.pulls.get({
-        //     owner: context.repo.owner,
-        //     repo: context.repo.repo,
-        //     pull_number: pullRequest.number
-        //   })
-        //   pull.
-        //   await octokit.issues.addLabels({
-        //     owner: context.repo.owner,
-        //     repo: context.repo.repo,
-        //     issue_number: pullRequest.number,
-        //     labels: (getInput("labels") || "")
-        //         .split(",")
-        //         .map((label) => label.trim()),
-        //   });
-        // }
+        const state = repository.pullRequest.reviewDecision;
+        core_1.debug(`pr state is: ${state}`);
+        if (state === "APPROVED") {
+            await octokit.issues.addLabels({
+                owner: github_1.context.repo.owner,
+                repo: github_1.context.repo.repo,
+                issue_number: pullRequest.number,
+                labels: (core_1.getInput("labels") || "")
+                    .split(",")
+                    .map((label) => label.trim()),
+            });
+        }
     }
     //   const reviews = await octokit.pulls.listReviews({
     //     owner: context.repo.owner,
