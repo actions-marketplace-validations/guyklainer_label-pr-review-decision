@@ -1,4 +1,4 @@
-import { getInput, debug, setFailed, setOutput } from "@actions/core";
+import { getInput, debug, info, setFailed } from "@actions/core";
 import {context, getOctokit} from "@actions/github";
 import {WebhookPayload} from "@actions/github/lib/interfaces";
 
@@ -27,45 +27,28 @@ export const run = async () => {
      }
     `);
     const state = repository.pullRequest.reviewDecision;
-    debug(`pr state is: ${state}`);
+    info(`PR state is: ${state}`);
 
     if(state === "APPROVED") {
+      const labelToAdd = getInput("approveLabel") || "ready to merge";
+      const labelToRemove = getInput("labelToRemove") || "ready for review";
       await octokit.issues.addLabels({
         owner: context.repo.owner,
         repo: context.repo.repo,
         issue_number: pullRequest.number,
-        labels: (getInput("labels") || "")
-            .split(",")
-            .map((label) => label.trim()),
+        labels: [labelToAdd],
       });
+
+      octokit.issues.removeLabel({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        issue_number: pullRequest.number,
+        name: labelToRemove
+      })
+
+      info(`PR labeled with: ${labelToAdd}`);
     }
   }
-
-//   const reviews = await octokit.pulls.listReviews({
-//     owner: context.repo.owner,
-//     repo: context.repo.repo,
-//     pull_number: pullRequest.number,
-//   });
-//   const allApproved = reviews.data.every(
-//     (review) => review.state === "APPROVED"
-//   );
-//   if (allApproved) {
-//     if (reviews.data.length >= Number(getInput("approvals") || 1)) {
-//       await octokit.issues.addLabels({
-//         owner: context.repo.owner,
-//         repo: context.repo.repo,
-//         issue_number: pullRequest.number,
-//         labels: (getInput("labels") || "")
-//           .split(",")
-//           .map((label) => label.trim()),
-//       });
-//       console.log("Added labels");
-//     } else {
-//       console.log("Number of approvals not met");
-//     }
-//   } else {
-//     console.log("All reviews are not approved");
-//   }
 };
 
 export const wait = (milliseconds: number) => {

@@ -1449,43 +1449,25 @@ const run = async () => {
      }
     `);
         const state = repository.pullRequest.reviewDecision;
-        core_1.debug(`pr state is: ${state}`);
+        core_1.info(`PR state is: ${state}`);
         if (state === "APPROVED") {
+            const labelToAdd = core_1.getInput("approveLabel") || "ready to merge";
+            const labelToRemove = core_1.getInput("labelToRemove") || "ready for review";
             await octokit.issues.addLabels({
                 owner: github_1.context.repo.owner,
                 repo: github_1.context.repo.repo,
                 issue_number: pullRequest.number,
-                labels: (core_1.getInput("labels") || "")
-                    .split(",")
-                    .map((label) => label.trim()),
+                labels: [labelToAdd],
             });
+            octokit.issues.removeLabel({
+                owner: github_1.context.repo.owner,
+                repo: github_1.context.repo.repo,
+                issue_number: pullRequest.number,
+                name: labelToRemove
+            });
+            core_1.info(`PR labeled with: ${labelToAdd}`);
         }
     }
-    //   const reviews = await octokit.pulls.listReviews({
-    //     owner: context.repo.owner,
-    //     repo: context.repo.repo,
-    //     pull_number: pullRequest.number,
-    //   });
-    //   const allApproved = reviews.data.every(
-    //     (review) => review.state === "APPROVED"
-    //   );
-    //   if (allApproved) {
-    //     if (reviews.data.length >= Number(getInput("approvals") || 1)) {
-    //       await octokit.issues.addLabels({
-    //         owner: context.repo.owner,
-    //         repo: context.repo.repo,
-    //         issue_number: pullRequest.number,
-    //         labels: (getInput("labels") || "")
-    //           .split(",")
-    //           .map((label) => label.trim()),
-    //       });
-    //       console.log("Added labels");
-    //     } else {
-    //       console.log("Number of approvals not met");
-    //     }
-    //   } else {
-    //     console.log("All reviews are not approved");
-    //   }
 };
 exports.run = run;
 const wait = (milliseconds) => {
