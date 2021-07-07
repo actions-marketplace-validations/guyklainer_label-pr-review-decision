@@ -20,7 +20,7 @@ export const run = async () => {
     debug(`pr state is: ${pullRequest.mergeable_state}`);
     const res = await octokit.graphql(`
      {
-      repository(name: ${context.repo.repo}, owner: ${context.repo.owner}) { 
+      repository(name: "${context.repo.repo}", owner: "${context.repo.owner}") { 
        pullRequest(number: ${pullRequest.number}) {
         reviewDecision
        }
