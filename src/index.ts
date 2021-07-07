@@ -1,5 +1,6 @@
 import { getInput, debug, setFailed, setOutput } from "@actions/core";
 import {context, getOctokit} from "@actions/github";
+import {WebhookPayload} from "@actions/github/lib/interfaces";
 
 const token =
   getInput("token") || process.env.GH_PAT || process.env.GITHUB_TOKEN;
@@ -13,19 +14,34 @@ export const run = async () => {
     return console.log("No pull request found");
 
   const pullRequest = (context as any).payload
-    .pull_request;
+    .pull_request as WebhookPayload['pull_request'];
 
-  debug(`pr state is: ${JSON.stringify(pullRequest.mergeable_state)}`);
-  if(pullRequest.mergeable_state === "clean") {
-    await octokit.issues.addLabels({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      issue_number: pullRequest.number,
-      labels: (getInput("labels") || "")
-        .split(",")
-        .map((label) => label.trim()),
-    });
-
+  if(pullRequest){
+    debug(`pr state is: ${pullRequest.mergeable_state}`);
+    const res = await octokit.graphql(`
+      repository(name: "fe-modules", owner: "bizzabo") { 
+       pullRequest(number: ${pullRequest.number}) {
+        reviewDecision
+       }
+      }
+    `);
+    debug(JSON.stringify(res));
+    // if(pullRequest.mergeable_state === "clean") {
+    //   const pull = await octokit.pulls.get({
+    //     owner: context.repo.owner,
+    //     repo: context.repo.repo,
+    //     pull_number: pullRequest.number
+    //   })
+    //   pull.
+    //   await octokit.issues.addLabels({
+    //     owner: context.repo.owner,
+    //     repo: context.repo.repo,
+    //     issue_number: pullRequest.number,
+    //     labels: (getInput("labels") || "")
+    //         .split(",")
+    //         .map((label) => label.trim()),
+    //   });
+    // }
   }
 
 //   const reviews = await octokit.pulls.listReviews({
