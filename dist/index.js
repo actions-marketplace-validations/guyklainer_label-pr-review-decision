@@ -1441,11 +1441,13 @@ const run = async () => {
     if (pullRequest) {
         core_1.debug(`pr state is: ${pullRequest.mergeable_state}`);
         const res = await octokit.graphql(`
-      repository(name: "fe-modules", owner: "bizzabo") { 
+     {
+      repository(name: ${github_1.context.repo.repo}, owner: ${github_1.context.repo.owner}) { 
        pullRequest(number: ${pullRequest.number}) {
         reviewDecision
        }
       }
+     }
     `);
         core_1.debug(JSON.stringify(res));
         // if(pullRequest.mergeable_state === "clean") {
